@@ -1,0 +1,105 @@
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: "Arial", sans-serif;
+  font-size: 10pt;
+  background: #F2F3F3;
+  margin: 0;
+}
+
+div {
+  -moz-user-select: none;
+  cursor: default;
+}
+
+div#ONotesToolbar {
+  background: linear-gradient(#E6E3DF, #D4D0C8); /*#E4E1DC;*/
+  padding: 10px 5px;
+  height: calc(16px + 2px);
+}
+
+div#ONotesToolbar div {
+  display: inline;
+  margin: 1px;
+  padding: 4px 4px 6px 4px;
+  vertical-align: middle;
+}
+
+div#ONotesToolbar div.disabled:hover, div#ONotesToolbar div.disabled:active {
+  background: none;
+  margin: 1px;
+  border: none;
+}
+
+div#ONotesToolbar div.disabled img {
+  filter: grayscale(100%);
+}
+
+div#ONotesToolbar div img {
+  vertical-align: middle;
+}
+
+div#ONotesToolbar div:hover {
+  background: linear-gradient(#F2F1EF, #DDDAD4); /*#F0EFEC*/;
+  margin: 0;
+  border: 1px solid #C6CACA;
+  border-style: outset;
+  border-radius: 7px;
+}
+
+div#ONotesToolbar div:active {
+  background: linear-gradient(#E1E2E3, #C4C6C4); /*#E2E3E3*/;
+  margin: 0;
+  border: 1px solid #949EA6;
+  border-style: inset;
+  border-radius: 7px;
+}
+
+div#ONotesList {
+  height: calc(70% - 16px - 22px);
+  overflow: auto;
+}
+
+div#ONotesList div {
+  padding: 2px 5px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+div#ONotesList div img {
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
+div#ONotesList div.folder {
+  padding: 0;
+}
+
+div.folderContents {
+  display: none;
+  padding: 0 !important;
+}
+
+div#ONotesTrash div.folderContents > div {
+  margin-left: 14px;
+}
+
+div.folderContents > div {
+  margin-left: 17px;
+}
+
+div.selected {
+  color: white;
+  background: #0A246A;
+}
+
+textarea#ONotesEdit {
+  box-sizing: border-box;
+  resize: none;
+  width: 100%;
+  height: 30%;
+  margin: 0;
+}

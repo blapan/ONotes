@@ -1,0 +1,12 @@
+{
+  "title": "ONotes",
+  "name": "onotes",
+  "version": "0.0.1",
+  "description": "Replicates functionality of the Notes feature in Opera v12 that was removed in recent versions.",
+  "main": "index.js",
+  "author": "Brian LaPan",
+  "engines": {
+    "firefox": ">=38.0a1"
+  },
+  "license": "GPL"
+}

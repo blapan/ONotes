@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="stylesheet" href=sidebar.css />
+  </head>
+  <body>
+    <div id="ONotesToolbar">
+      <div id="ONotesNewNote" title="New Note"><img src="silk/note_add.png" /></div>
+      <div id="ONotesNewFolder" title="New Folder"><img src="silk/folder_add.png" /></div>
+      <div id="ONotesDelete" title="Delete" class="disabled"><img src="silk/delete.png" /></div>
+    </div>
+    <div id="ONotesList">
+      <div id="ONotesTrash" class="folder">
+        <div><img src="onotes-triangleright-7.png" /><img src="onotes-trash-14.png" />Trash</div>
+        <div class="folderContents"></div>
+      </div>
+    </div>
+    <textarea id="ONotesEdit"></textarea>
+  </body>
+  <script type="text/javascript" src="sidebarDragFunctions.js"></script>
+  <script type="text/javascript" src="sidebar.js"></script>
+</html>
