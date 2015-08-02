@@ -15,7 +15,7 @@
         <div class="folderContents"></div>
       </div>
     </div>
-    <textarea id="ONotesEdit"></textarea>
+    <textarea id="ONotesEdit" ondrop="return false;" ondragover="event.preventDefault(); event.dataTransfer.effectAllowed = 'none';"></textarea>
   </body>
   <script type="text/javascript" src="sidebarDragFunctions.js"></script>
   <script type="text/javascript" src="sidebar.js"></script>

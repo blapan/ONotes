@@ -35,7 +35,9 @@ function onoteDragOver(event) {
     if(t.parentElement.className == 'folder') {
       t.className = ''; //Folder label div
       t.nextElementSibling.children[0].style.borderTop = ''; //First item in folder
-      t.parentElement.nextElementSibling.style.borderTop = ''; //Item after folder
+      if(t.parentElement.nextElementSibling != null) {
+        t.parentElement.nextElementSibling.style.borderTop = ''; //Item after folder if present
+      }      
     }
     switch(dragPos) {
       case 'top':
