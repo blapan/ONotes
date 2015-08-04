@@ -82,7 +82,7 @@ function addONote(ONote, index, parentDiv) {
     parentDiv = ONotesDiv;
     if(ONote.inTrash) {
       parentDiv = ONotesTrash.getElementsByClassName('folderContents')[0];
-      ONotesTrash.getElementsByTagName('div')[0].style.fontWeight = 'bold';
+      ONotesTrash.getElementsByTagName('div')[0].classList.add('nonEmpty');
     }
   }
   var e = document.createElement('div');
@@ -110,8 +110,9 @@ function addONote(ONote, index, parentDiv) {
     var noteImg = document.createElement('img');
     noteImg.src = 'silk/note.png';
     e.appendChild(noteImg);
-    e.addEventListener('click', editOnote);
+    e.addEventListener('click', selectOnote);
   }
+  selectableDiv.className = 'ONotesLabel';
   selectableDiv.setAttribute('data-onotesindex', index);
   selectableDiv.appendChild(document.createTextNode(ONote.label));
   selectableDiv.setAttribute('draggable', true);
@@ -134,16 +135,16 @@ function getONote(index) {
   return temp;
 }
 
-function editOnote(e) {
-  if(selectedDiv != null) selectedDiv.className = '';
+function selectOnote(e) {
+  if(selectedDiv != null) selectedDiv.classList.remove('selected');
   if(e.constructor.name == 'MouseEvent') selectedDiv = e.currentTarget;
   else selectedDiv = e;
   
   selectedIndex = selectedDiv.dataset.onotesindex;
-  selectedDiv.className = 'selected';
+  selectedDiv.classList.add('selected');
   ONotesEdit.disabled = false;
   ONotesEdit.value = getONote(selectedIndex).value;
-  ONotesDelete.className = '';
+  ONotesDelete.classList.remove('disabled');;
 }
 
 function updateONote() {
@@ -162,7 +163,7 @@ function updateONote() {
 
 function newOnote() {
   newOnoteDiv = addONote({ label: '', value: '' });
-  editOnote(newOnoteDiv);
+  selectOnote(newOnoteDiv);
 }
 
 function newOnoteFolder() {
@@ -185,7 +186,7 @@ function deleteOnote() {
     sendToTrash = false;
   }
   //selected item is the first item in a folder
-  else if(selectedDiv.previousElementSibling == null && selectedDiv.parentElement.className == 'folderContents') {
+  else if(selectedDiv.previousElementSibling == null && selectedDiv.parentElement.classList.contains('folderContents')) {
     nextSelectedDiv = selectedDiv.parentElement.parentElement.childNodes[0];
   }
   //selected item is after the trash
@@ -193,7 +194,7 @@ function deleteOnote() {
     nextSelectedDiv = null;
   }
   //selected item is after a folder
-  else if(selectedDiv.previousElementSibling != null && selectedDiv.previousElementSibling.className == 'folder') {
+  else if(selectedDiv.previousElementSibling != null && selectedDiv.previousElementSibling.classList.contains('folder')) {
     nextSelectedDiv = selectedDiv.previousElementSibling.childNodes[0];
   }
   //selected item is after a note
@@ -203,56 +204,56 @@ function deleteOnote() {
   
   if(sendToTrash) {
     var trashContents = ONotesTrash.getElementsByClassName('folderContents')[0];
-    if(selectedDiv.parentElement.className == 'folder') trashContents.appendChild(selectedDiv.parentElement);
+    if(selectedDiv.parentElement.classList.contains('folder')) trashContents.appendChild(selectedDiv.parentElement);
     else trashContents.appendChild(selectedDiv);
-    ONotesTrash.getElementsByTagName('div')[0].style.fontWeight = 'bold';
+    ONotesTrash.getElementsByTagName('div')[0].classList.add('nonEmpty');
     getONote(selectedIndex).inTrash = true;
   }
   else {
-    if(selectedDiv.parentElement.className == 'folder') selectedDiv.parentElement.remove();
+    if(selectedDiv.parentElement.classList.contains('folder')) selectedDiv.parentElement.remove();
     else selectedDiv.remove();
     if(ONotesTrash.getElementsByClassName('folderContents')[0].children.length == 0) {
       ONotesTrash.getElementsByTagName('div')[0].getElementsByTagName('img')[0].src = 'onotes-triangleright-7.png';
-      ONotesTrash.getElementsByClassName('folderContents')[0].style.display = 'none';
-      ONotesTrash.getElementsByTagName('div')[0].style.fontWeight = '';
+      ONotesTrash.getElementsByClassName('folderContents')[0].classList.remove('open');
+      ONotesTrash.getElementsByTagName('div')[0].classList.remove('nonEmpty');
     }
     getONote(selectedIndex).deleted = true;
   }
   
   if(nextSelectedDiv != null) {
-    editOnote(nextSelectedDiv);
+    selectOnote(nextSelectedDiv);
   }
   else {
-    selectedDiv.className = '';
+    selectedDiv.classList.remove('selected');
     selectedDiv = null;
     selectedIndex = -1;
-    ONotesDelete.className = 'disabled';
+    ONotesDelete.classList.add('disabled');
   }
 }
 
 function toggleFolder(event) {
-  if(selectedDiv != null) selectedDiv.className = '';
+  if(selectedDiv != null) selectedDiv.classList.remove('selected');
   selectedDiv = event.currentTarget;
   selectedIndex = selectedDiv.dataset.onotesindex;
-  selectedDiv.className = 'selected';
+  selectedDiv.classList.add('selected');
   if(selectedDiv.parentElement.id == 'ONotesTrash') {
     ONotesEdit.value = '';
     ONotesEdit.disabled = true;
-    ONotesDelete.className = 'disabled';
+    ONotesDelete.classList.add('disabled');
   }
   else {
     ONotesEdit.value =  getONote(selectedIndex).label;
     ONotesEdit.disabled = false;
-    ONotesDelete.className = '';
+    ONotesDelete.classList.remove('disabled');
   }
   var folderContentsDiv = selectedDiv.parentElement.getElementsByClassName('folderContents')[0];
   if(!folderContentsDiv.hasChildNodes()) return;
-  if(getComputedStyle(folderContentsDiv).display == 'none') {
-    selectedDiv.getElementsByTagName('img')[0].src = 'onotes-triangledown-7.png';
-    folderContentsDiv.style.display = 'block';
+  if(folderContentsDiv.classList.contains('open')) {
+    selectedDiv.getElementsByTagName('img')[0].src = 'onotes-triangleright-7.png';
+    folderContentsDiv.classList.remove('open');
   }
   else {
-    selectedDiv.getElementsByTagName('img')[0].src = 'onotes-triangleright-7.png';
-    folderContentsDiv.style.display = 'none';
+    selectedDiv.getElementsByTagName('img')[0].src = 'onotes-triangledown-7.png';
+    folderContentsDiv.classList.add('open');
   }
 }

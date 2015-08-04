@@ -69,9 +69,6 @@ var ONotesButton = ToggleButton({
   }
 });
 
-/**
- * @param {String} text
- */
 function createONote(text) {
   if(text.length >= 20) {
     var label = text.substring(0, 20) + '...';

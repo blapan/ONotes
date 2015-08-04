@@ -1,18 +1,18 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <link rel="stylesheet" href=sidebar.css />
+    <link rel="stylesheet" href="sidebar.css" />
   </head>
   <body>
     <div id="ONotesToolbar">
-      <div id="ONotesNewNote" title="New Note"><img src="silk/note_add.png" /></div>
-      <div id="ONotesNewFolder" title="New Folder"><img src="silk/folder_add.png" /></div>
-      <div id="ONotesDelete" title="Delete" class="disabled"><img src="silk/delete.png" /></div>
+      <div id="ONotesNewNote" class="ONotesButton" title="New Note"><img src="silk/note_add.png" /></div>
+      <div id="ONotesNewFolder" class="ONotesButton" title="New Folder"><img src="silk/folder_add.png" /></div>
+      <div id="ONotesDelete" class="ONotesButton" title="Delete" class="disabled"><img src="silk/delete.png" /></div>
     </div>
     <div id="ONotesList">
       <div id="ONotesTrash" class="folder">
-        <div><img src="onotes-triangleright-7.png" /><img src="onotes-trash-14.png" />Trash</div>
-        <div class="folderContents"></div>
+        <div class="ONotesLabel trashLabel"><img src="onotes-triangleright-7.png" /><img src="onotes-trash-14.png" />Trash</div>
+        <div class="folderContents trashFolder"></div>
       </div>
     </div>
     <textarea id="ONotesEdit" ondrop="return false;" ondragover="event.preventDefault(); event.dataTransfer.effectAllowed = 'none';"></textarea>
