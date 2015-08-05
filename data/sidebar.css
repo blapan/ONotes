@@ -16,6 +16,7 @@ div {
 
 img {
   vertical-align: middle;
+  pointer-events: none;
 }
 
 /* BEGIN TOOLBAR STYLES */

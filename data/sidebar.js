@@ -97,6 +97,8 @@ function addONote(ONote, index, parentDiv) {
     selectableDiv = folderLabel;
     arrowImg.src = 'onotes-triangleright-7.png';
     folderImg.src = 'silk/folder.png';
+    arrowImg.setAttribute('draggable', false);
+    folderImg.setAttribute('draggable', false);
     folderLabel.appendChild(arrowImg);
     folderLabel.appendChild(folderImg);
     folderContents.className = 'folderContents';
@@ -109,6 +111,7 @@ function addONote(ONote, index, parentDiv) {
   else {
     var noteImg = document.createElement('img');
     noteImg.src = 'silk/note.png';
+    noteImg.setAttribute('draggable', false);
     e.appendChild(noteImg);
     e.addEventListener('click', selectOnote);
   }
