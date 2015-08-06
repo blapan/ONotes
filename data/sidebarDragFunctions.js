@@ -1,21 +1,7 @@
-var prevDragPos = '';
-var dragPos = '';
-var openFolderTimer = null;
-
-var dropData = {
-  pos: '',
-  prevPos: '',
-  clientHeight: 0,
-  offsetTop: 0,
-  isFolder: false,
-  folderContentsDiv: null,
-  folderOpen: false,
-  folderEmpty: true,
-  openFolderTimer: null,
-}
+var dragData = {};
 
 function onoteDragStart(event) {
-  event.dataTransfer.setData('text/plain', 'This text may be dragged');
+  event.dataTransfer.setData('text/plain', event.currentTarget.dataset.onotesindex);
   event.dataTransfer.effectAllowed = 'move';
 }
 
@@ -23,19 +9,26 @@ function onoteDragEnter(event) {
   event.preventDefault();
   event.dataTransfer.dropEffect = 'move';
   var t = event.currentTarget;
-  dropData.offsetTop = t.offsetTop;
-  dropData.clientHeight = t.clientHeight;
-  if(t.parentElement.classList.contains('folder')) {
-    dropData.isFolder = true;
-    dropData.folderContentsDiv = t.parentElement.getElementsByClassName('folderContents')[0];
-    dropData.folderOpen = dropData.folderContentsDiv.classList.contains('open');
-    dropData.folderEmpty = dropData.folderContentsDiv.hasChildNodes();
+  var i = t.dataset.onotesindex;
+  dragData[i] = {
+    pos: '',
+    prevPos: '',
+    clientHeight: t.clientHeight,
+    offsetTop: t.offsetTop,
+    pct20: Math.round(this.clientHeight * 0.2),
+    pct70: Math.round(this.clientHeight * 0.7),
+    isFolder: false,
+    isTrash: false,
+    folderContentsDiv: null,
+    folderOpen: false,
+    folderEmpty: true,
+    openFolderTimer: null,
   }
-  else {
-    dropData.isFolder = false;
-    dropData.folderContentsDiv = null;
-    dropData.folderOpen = false;
-    dropData.folderEmpty = true;
+  if(t.parentElement.classList.contains('folder')) {
+    dragData[i].isFolder = true;
+    dragData[i].folderContentsDiv = t.parentElement.getElementsByClassName('folderContents')[0];
+    dragData[i].folderOpen = dragData[i].folderContentsDiv.classList.contains('open');
+    dragData[i].folderEmpty = !dragData[i].folderContentsDiv.hasChildNodes();
   }
 }
 
@@ -43,60 +36,47 @@ function onoteDragOver(event) {
   event.preventDefault();
   event.dataTransfer.dropEffect = 'move';
   var t = event.currentTarget;
-  var relativeYpos = (event.pageY + document.getElementById('ONotesList').scrollTop) - t.offsetTop;
+  var i = t.dataset.onotesindex;
+  var relativeYpos = (event.pageY + document.getElementById('ONotesList').scrollTop) - dragData[i].offsetTop;
   
-  var pct20 = Math.round(t.clientHeight * 0.2);
-  var pct70 = Math.round(t.clientHeight * 0.7);
+  if(relativeYpos <= dragData[i].pct20) dragData[i].pos = 'top';
+  else if(relativeYpos <= dragData[i].pct70) dragData[i].pos = 'middle';
+  else if(relativeYpos > dragData[i].pct70) dragData[i].pos = 'bottom';
   
-  if(relativeYpos <= pct20) dragPos = 'top';
-  else if(relativeYpos <= pct70) dragPos = 'middle';
-  else if(relativeYpos > pct70) dragPos = 'bottom';
-  
-  console.log(relativeYpos + '<->' + pct70 + ' ' + t.clientHeight + ' ' + event.pageY + '/' + event.clientY + '-' + t.offsetTop + ' index: ' + t.dataset.onotesindex + ' ' + dragPos + ' ' + prevDragPos);
-  
-  if(dragPos != prevDragPos) {
-    console.log('POS CHANGE FROM '+prevDragPos+' TO '+dragPos);
-    prevDragPos = dragPos;
+  if(dragData[i].pos != dragData[i].prevPos) {
+    dragData[i].prevPos = dragData[i].pos;
     clearDropStyles(t);
-    if(t.parentElement.classList.contains('folder')) {
-      var folderContentsDiv = t.parentElement.getElementsByClassName('folderContents')[0];
-    }
-    switch(dragPos) {
+
+    switch(dragData[i].pos) {
       case 'top':
-        clearTimeout(openFolderTimer);
-        openFolderTimer = null;
+        clearTimeout(dragData[i].openFolderTimer);
+        dragData[i].openFolderTimer = null;
         t.classList.add('dropAbove');
-        console.log('BORDER TOP SET');
         break;
       case 'middle':
-        if(t.parentElement.classList.contains('folder')) {
+        if(dragData[i].isFolder) {
           t.classList.add('selected');          
-          if(folderContentsDiv.hasChildNodes() && !folderContentsDiv.classList.contains('open') && openFolderTimer == null) {
-            openFolderTimer = setTimeout(onoteDragOpenFolder, 500, folderContentsDiv);
+          if(!dragData[i].folderEmpty && !dragData[i].folderOpen && dragData[i].openFolderTimer == null) {
+            dragData[i].openFolderTimer = setTimeout(onoteDragOpenFolder, 500, dragData[i].folderContentsDiv);
           }
-          console.log('FOLDER SELECTED');
         }
         else {
           t.classList.add('dropAbove');
-          console.log('BORDER TOP SET FOR MIDDLE')
         }
         break;
       case 'bottom':
-        clearTimeout(openFolderTimer);
-        openFolderTimer = null;
-        if(t.parentElement.classList.contains('folder')) {
-          if(folderContentsDiv.classList.contains('open')) {
-            folderContentsDiv.children[0].classList.add('dropAbove');
-            console.log('FIRST FOLDER ITEM BORDER TOP SET');
+        clearTimeout(dragData[i].openFolderTimer);
+        dragData[i].openFolderTimer = null;
+        if(dragData[i].isFolder) {
+          if(dragData[i].folderOpen) {
+            dragData[i].folderContentsDiv.children[0].classList.add('dropAbove');
           }
           else {
             t.parentElement.classList.add('dropBelow');
-            console.log('ITEM AFTER FOLDER BORDER TOP SET')
           }
         }
         else {
           t.classList.add('dropBelow');
-          console.log('NEXT ELEMENT BORDER TOP SET');
         }
         break;
     }
@@ -104,33 +84,29 @@ function onoteDragOver(event) {
 }
 
 function onoteDragOpenFolder(folderContentsDiv) {
-  folderContentsDiv.previousElementSibling.getElementsByTagName('img')[0].src = 'onotes-triangledown-7.png';
   folderContentsDiv.classList.add('open');
+  folderContentsDiv.previousElementSibling.getElementsByTagName('img')[0].src = 'onotes-triangledown-7.png';
+  dragData[folderContentsDiv.previousElementSibling.dataset.onotesindex].folderOpen = true;
 }
 
 function onoteDragLeave(event) {
   event.preventDefault();
-  clearTimeout(openFolderTimer);
-  openFolderTimer = null;
+  clearTimeout(dragData[event.currentTarget.dataset.onotesindex].openFolderTimer);
   clearDropStyles(event.currentTarget);
-  console.log('DRAG LEAVE INDEX: ' + event.currentTarget.dataset.onotesindex);
-  dragPos = prevDragPos = '';
 }
 
 function onoteDrop(event) {
   event.preventDefault();
-  clearTimeout(openFolderTimer);
-  openFolderTimer = null;
+  clearTimeout(dragData[event.currentTarget.dataset.onotesindex].openFolderTimer);
   clearDropStyles(event.currentTarget);
-  dragPos = prevDragPos = '';
-  console.log('dropped over: '+ event.currentTarget.dataset.onotesindex + ' ' + dragPos);
+  console.log('dropped over: '+ event.currentTarget.dataset.onotesindex + ' ' + dragData[event.currentTarget.dataset.onotesindex].pos);
+  dragData = {};  
 }
 
 function clearDropStyles(t) {
-  t.classList.remove('dropAbove', 'dropBelow');
-  if(t.parentElement.classList.contains('folder')) {
-    t.classList.remove('selected'); //Folder label div
-    if(t.nextElementSibling.hasChildNodes()) t.nextElementSibling.children[0].classList.remove('dropAbove'); //First item in folder if it exists
+  t.classList.remove('dropAbove', 'dropBelow', 'selected');
+  if(dragData[t.dataset.onotesindex].isFolder) {
+    if(!dragData[t.dataset.onotesindex].folderEmpty) t.nextElementSibling.children[0].classList.remove('dropAbove'); //First item in folder if it exists
     t.parentElement.classList.remove('dropBelow');
   }
 }
