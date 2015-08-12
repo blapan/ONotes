@@ -64,7 +64,7 @@ div.ONotesButton.disabled img {
 
 /* BEGIN ONOTES STYLES */
 
-div#ONotesList {
+div#ONotesDisplay {
   height: calc(70% - 16px - 22px);
   overflow: auto;
 }

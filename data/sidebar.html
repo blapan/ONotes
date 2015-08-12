@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <html>
   <head>
+    <meta charset="utf-8">
     <link rel="stylesheet" href="sidebar.css" />
   </head>
   <body>
@@ -9,12 +10,14 @@
       <div id="ONotesNewFolder" class="ONotesButton" title="New Folder"><img src="silk/folder_add.png" draggable="false" /></div>
       <div id="ONotesDelete" class="ONotesButton" title="Delete" class="disabled"><img src="silk/delete.png" draggable="false" /></div>
     </div>
-    <div id="ONotesList">
+    <div id="ONotesDisplay">
       <div id="ONotesTrash" class="folder">
-        <div class="ONotesLabel trashLabel"><img src="onotes-triangleright-7.png" draggable="false" /><img src="onotes-trash-14.png" draggable="false" />Trash</div>
+        <div class="ONotesLabel trashLabel" data-onotesindex="trash"><img src="onotes-triangleright-7.png" draggable="false" /><img src="onotes-trash-14.png" draggable="false" />Trash</div>
         <div class="folderContents trashFolder"></div>
       </div>
+      <div id="ONotesList"></div>
     </div>
+    
     <textarea id="ONotesEdit" ondrop="return false;" ondragover="event.preventDefault(); event.dataTransfer.effectAllowed = 'none';"></textarea>
   </body>
   <script type="text/javascript" src="sidebarDragFunctions.js"></script>

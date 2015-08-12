@@ -40,7 +40,7 @@ else {
     { label: "TEST14", value: "TEST14" },
     { label: "TEST15", value: "TEST15" },
     { label: "TEST16", value: "TEST16" },
-    { label: "TEST17", value: "TEST17" },
+    { label: "TEST17 EMPTY FOLDER", value: [] },
     { label: "TEST18", value: "TEST18", inTrash: true },
     { label: "TEST19", value: "TEST19", inTrash: true },
     { label: "TEST FOLDER IN TRASH", value: [
@@ -51,6 +51,7 @@ else {
     ], inTrash: true },
     { label: "TEST20", value: "TEST20", deleted: true },
     { label: "TEST21", value: "TEST21", deleted: true },
+    { label: "TEST22", value: "TEST22" },
   ];
   initONotes(ONotesArr);
 }
@@ -65,6 +66,11 @@ function initONotes(payload) {
   ONotesNewNote.addEventListener('click', newOnote);
   ONotesNewFolder.addEventListener('click', newOnoteFolder);
   ONotesDelete.addEventListener('click', deleteOnote);
+  
+  ONotesTrash.children[0].addEventListener('dragenter', onoteDragEnter);
+  ONotesTrash.children[0].addEventListener('dragover', onoteDragOver);
+  ONotesTrash.children[0].addEventListener('dragleave', onoteDragLeave);
+  ONotesTrash.children[0].addEventListener('drop', onoteDrop);
   
   folderDivs = document.getElementsByClassName('folder');
   for(var i = 0; i < folderDivs.length; ++i) {
@@ -103,7 +109,8 @@ function addONote(ONote, index, parentDiv) {
     folderLabel.appendChild(folderImg);
     folderContents.className = 'folderContents';
     for(var i = 0; i < ONote.value.length; ++i) {
-      addONote(ONote.value[i], index + '.' + i, folderContents);
+      //addONote(ONote.value[i], index + '.' + i, folderContents);
+      addONote(ONote.value[i], i, folderContents);
     }
     e.appendChild(folderLabel);
     e.appendChild(folderContents);
@@ -124,13 +131,32 @@ function addONote(ONote, index, parentDiv) {
   selectableDiv.addEventListener('dragover', onoteDragOver);
   selectableDiv.addEventListener('dragleave', onoteDragLeave);
   selectableDiv.addEventListener('drop', onoteDrop);
+  
+  //FOR TESTING ONLY
+  selectableDiv.id = ONote.label;
+  
   parentDiv.appendChild(e);
   return e;
 }
 
+function getONoteIndex(element) {
+  //console.debug('GETTING INDEX FOR', element);
+  var indexArr = [];
+  var temp = element;
+  while(temp.id != 'ONotesList' && temp.id != 'ONotesTrash') {
+    if(temp.classList.contains('folderContents')) indexArr.unshift(temp.previousElementSibling.dataset.onotesindex);
+    else if(temp.classList.contains('ONotesLabel')) indexArr.unshift(temp.dataset.onotesindex);
+    temp = temp.parentElement;
+  }
+  return indexArr.join('.');
+}
+
 function getONote(index) {
+  //console.debug('GETTING DATA AT INDEX', index);
   var temp = ONotesArr;
   var indexArr = index.split('.');
+  if(indexArr[0] == 'trash') indexArr.shift(); //TODO: Make the trash its own separate array
+  
   for(var i = 0; i < indexArr.length; ++i) {
     if(i == 0) temp = temp[indexArr[i]];
     else temp = temp.value[indexArr[i]];
@@ -143,7 +169,7 @@ function selectOnote(e) {
   if(e.constructor.name == 'MouseEvent') selectedDiv = e.currentTarget;
   else selectedDiv = e;
   
-  selectedIndex = selectedDiv.dataset.onotesindex;
+  selectedIndex = getONoteIndex(selectedDiv);
   selectedDiv.classList.add('selected');
   ONotesEdit.disabled = false;
   ONotesEdit.value = getONote(selectedIndex).value;
@@ -180,7 +206,7 @@ function deleteOnote() {
   //Selected item is the trash itself
   if(selectedDiv.parentElement.id == 'ONotesTrash') return false;
   
-  selectedIndex = selectedDiv.dataset.onotesindex;
+  selectedIndex = getONoteIndex(selectedDiv);
   
   var nextSelectedDiv = null;
   var sendToTrash = true;
@@ -237,7 +263,7 @@ function deleteOnote() {
 function toggleFolder(event) {
   if(selectedDiv != null) selectedDiv.classList.remove('selected');
   selectedDiv = event.currentTarget;
-  selectedIndex = selectedDiv.dataset.onotesindex;
+  selectedIndex = getONoteIndex(selectedDiv);
   selectedDiv.classList.add('selected');
   if(selectedDiv.parentElement.id == 'ONotesTrash') {
     ONotesEdit.value = '';
