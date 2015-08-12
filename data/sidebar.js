@@ -1,4 +1,5 @@
 var ONotesArr = [];
+var ONotesTrashArr = [];
 var ONotesTrash = document.getElementById('ONotesTrash');
 var ONotesDiv = document.getElementById('ONotesList');
 var ONotesEdit = document.getElementById('ONotesEdit');
@@ -41,25 +42,35 @@ else {
     { label: "TEST15", value: "TEST15" },
     { label: "TEST16", value: "TEST16" },
     { label: "TEST17 EMPTY FOLDER", value: [] },
-    { label: "TEST18", value: "TEST18", inTrash: true },
-    { label: "TEST19", value: "TEST19", inTrash: true },
+    { label: "TEST22", value: "TEST22" },
+  ];
+  ONotesTrashArr = [
+    { label: "TEST18", value: "TEST18" },
+    { label: "TEST19", value: "TEST19" },
     { label: "TEST FOLDER IN TRASH", value: [
       { label: "TRASH SUBTEST1", value: "TRASH SUBTEST1" },
       { label: "TRASH SUBTEST2", value: "TRASH SUBTEST2" },
       { label: "TRASH SUBTEST3", value: "TRASH SUBTEST3" },
       { label: "TRASH SUBTEST4", value: "TRASH SUBTEST4" },
-    ], inTrash: true },
-    { label: "TEST20", value: "TEST20", deleted: true },
-    { label: "TEST21", value: "TEST21", deleted: true },
-    { label: "TEST22", value: "TEST22" },
+    ] },
+    { label: "TEST20", value: "TEST20" },
+    { label: "TEST21", value: "TEST21" },
   ];
-  initONotes(ONotesArr);
+  initONotes({ONotesArr: ONotesArr, ONotesTrashArr: ONotesTrashArr});
 }
 
 function initONotes(payload) {
-  ONotesArr = payload;
+  ONotesArr = payload.ONotesArr;
+  ONotesTrashArr = payload.ONotesTrashArr;
   for(var i = 0; i < ONotesArr.length; ++i) {
     addONote(ONotesArr[i], i);
+  }
+  
+  if(ONotesTrashArr.length > 0) {
+    ONotesTrash.getElementsByClassName('ONotesLabel')[0].classList.add('nonEmpty');
+    for(var i = 0; i < ONotesTrashArr.length; ++i) {
+      addONote(ONotesTrashArr[i], i, ONotesTrash.getElementsByClassName('folderContents')[0]);
+    }
   }
   
   ONotesEdit.addEventListener('keyup', updateONote);
@@ -86,10 +97,6 @@ function addONote(ONote, index, parentDiv) {
   }
   if(typeof parentDiv == 'undefined') {
     parentDiv = ONotesDiv;
-    if(ONote.inTrash) {
-      parentDiv = ONotesTrash.getElementsByClassName('folderContents')[0];
-      ONotesTrash.getElementsByTagName('div')[0].classList.add('nonEmpty');
-    }
   }
   var e = document.createElement('div');
   var selectableDiv = e;
@@ -140,7 +147,6 @@ function addONote(ONote, index, parentDiv) {
 }
 
 function getONoteIndex(element) {
-  //console.debug('GETTING INDEX FOR', element);
   var indexArr = [];
   var temp = element;
   while(temp.id != 'ONotesList' && temp.id != 'ONotesTrash') {
@@ -152,10 +158,16 @@ function getONoteIndex(element) {
 }
 
 function getONote(index) {
-  //console.debug('GETTING DATA AT INDEX', index);
   var temp = ONotesArr;
-  var indexArr = index.split('.');
-  if(indexArr[0] == 'trash') indexArr.shift(); //TODO: Make the trash its own separate array
+  var indexArr = [];
+  if(index != '' && index != null) {
+    indexArr = index.split('.');
+    if(indexArr[0] == 'trash') {
+      indexArr.shift();
+      temp = ONotesTrashArr;
+    }
+  }
+  
   
   for(var i = 0; i < indexArr.length; ++i) {
     if(i == 0) temp = temp[indexArr[i]];
@@ -206,45 +218,39 @@ function deleteOnote() {
   //Selected item is the trash itself
   if(selectedDiv.parentElement.id == 'ONotesTrash') return false;
   
-  selectedIndex = getONoteIndex(selectedDiv);
-  
   var nextSelectedDiv = null;
   var sendToTrash = true;
+  var prevElement = (selectedDiv.parentElement.classList.contains('folder')) ? selectedDiv.parentElement.previousElementSibling : selectedDiv.previousElementSibling;
   //selected item is inside the trash
-  if(getONote(selectedIndex.split('.')[0]).inTrash) {
+  if(selectedIndex.split('.')[0] == 'trash') {
     sendToTrash = false;
+    if(!confirm('Are you sure you want to permanently delete this item?')) {
+      return false;
+    }
   }
   //selected item is the first item in a folder
-  else if(selectedDiv.previousElementSibling == null && selectedDiv.parentElement.classList.contains('folderContents')) {
-    nextSelectedDiv = selectedDiv.parentElement.parentElement.childNodes[0];
-  }
-  //selected item is after the trash
-  else if(selectedDiv.previousElementSibling != null && selectedDiv.previousElementSibling.id == 'ONotesTrash') {
-    nextSelectedDiv = null;
+  else if(prevElement == null && selectedDiv.parentElement.classList.contains('folderContents')) {
+    nextSelectedDiv = prevElement.parentElement.childNodes[0];
   }
   //selected item is after a folder
-  else if(selectedDiv.previousElementSibling != null && selectedDiv.previousElementSibling.classList.contains('folder')) {
-    nextSelectedDiv = selectedDiv.previousElementSibling.childNodes[0];
+  else if(prevElement != null && prevElement.classList.contains('folder')) {
+    nextSelectedDiv = prevElement.childNodes[0];
   }
   //selected item is after a note
-  else if(selectedDiv.previousElementSibling != null) {
-    nextSelectedDiv = selectedDiv.previousElementSibling;
+  else if(prevElement != null) {
+    nextSelectedDiv = prevElement;
   }  
   
   if(sendToTrash) {
-    var trashContents = ONotesTrash.getElementsByClassName('folderContents')[0];
-    if(selectedDiv.parentElement.classList.contains('folder')) trashContents.appendChild(selectedDiv.parentElement);
-    else trashContents.appendChild(selectedDiv);
-    ONotesTrash.getElementsByTagName('div')[0].classList.add('nonEmpty');
-    getONote(selectedIndex).inTrash = true;
+    onoteMove(selectedDiv, ONotesTrash.getElementsByClassName('ONotesLabel')[0], 'middle');
   }
   else {
     if(selectedDiv.parentElement.classList.contains('folder')) selectedDiv.parentElement.remove();
     else selectedDiv.remove();
     if(ONotesTrash.getElementsByClassName('folderContents')[0].children.length == 0) {
-      ONotesTrash.getElementsByTagName('div')[0].getElementsByTagName('img')[0].src = 'onotes-triangleright-7.png';
+      ONotesTrash.getElementsByClassName('ONotesLabel')[0].getElementsByTagName('img')[0].src = 'onotes-triangleright-7.png';
       ONotesTrash.getElementsByClassName('folderContents')[0].classList.remove('open');
-      ONotesTrash.getElementsByTagName('div')[0].classList.remove('nonEmpty');
+      ONotesTrash.getElementsByClassName('ONotesLabel')[0].classList.remove('nonEmpty');
     }
     getONote(selectedIndex).deleted = true;
   }

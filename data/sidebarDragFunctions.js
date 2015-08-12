@@ -120,7 +120,7 @@ function onoteMove(source, dest, pos) {
   var sPath = sIndex.slice(0, sIndex.lastIndexOf('.') > 0 ? sIndex.lastIndexOf('.') : 0);
   var sBase = parseInt(sIndex.slice(sIndex.lastIndexOf('.') + 1));
   var dPath = dIndex.slice(0, dIndex.lastIndexOf('.') > 0 ? dIndex.lastIndexOf('.') : 0);
-  var dBase = parseInt(dIndex.slice(dIndex.lastIndexOf('.') + 1));
+  var dBase = dIndex == 'trash' ? 'trash' : parseInt(dIndex.slice(dIndex.lastIndexOf('.') + 1));
   var dParrent = dest.parentElement;
   
   if(source.parentElement.classList.contains('folder')) {
@@ -151,11 +151,10 @@ function onoteMove(source, dest, pos) {
     --dBase;
     shiftUp = true;
   }
-  
-  if(dPath == '') var dFolder = ONotesArr;
-  else var dFolder = getONote(dPath).value;
-  if(sPath == '') var sFolder = ONotesArr;
-  else var sFolder = getONote(sPath).value;
+  var dFolder = getONote(dPath);
+  var sFolder = getONote(sPath);
+  if(dFolder.value != undefined) dFolder = dFolder.value;
+  if(sFolder.value != undefined) dFolder = sFolder.value;
   
   if(sPath != dPath) {
     //Clone the source object so isn't deleted in the next step
@@ -171,13 +170,10 @@ function onoteMove(source, dest, pos) {
   
   var traverse = source;
   while(traverse != null && ((shiftUp && dBase >= sBase) || dBase <= sBase || sPath != dPath)) {
-    if(dFolder[dBase] === undefined ||  dFolder[dBase].deleted) {
+    if(dFolder[dBase] === undefined || dFolder[dBase].deleted) {
       if(shiftUp) --dBase;
       else ++dBase;
       continue;
-    }
-    if(dFolder[dBase].inTrash) {
-      //code
     }
     if(traverse.classList.contains('folder')) traverse.getElementsByClassName('ONotesLabel')[0].setAttribute('data-onotesindex', dBase);
     else traverse.setAttribute('data-onotesindex', dBase);
@@ -190,28 +186,6 @@ function onoteMove(source, dest, pos) {
       ++dBase;  
     } 
   }
-  
-  /*
-  if(sPath == dPath && dBase > sBase) {
-    --dBase;
-    var index = dBase - 1;
-    var traverse = source.previousElementSibling;
-    while(traverse != null && index >= sBase) {
-      if(traverse.classList.contains('folder')) traverse.getElementsByClassName('ONotesLabel')[0].setAttribute('data-onotesindex', index);
-      else traverse.setAttribute('data-onotesindex', index);
-      traverse = traverse.previousElementSibling;
-      --index;
-    }
-  }
-  
-  var traverse = source;
-  while(traverse != null && (dBase < sBase || sPath != dPath)) {
-    if(traverse.classList.contains('folder')) traverse.getElementsByClassName('ONotesLabel')[0].setAttribute('data-onotesindex', dBase);
-    else traverse.setAttribute('data-onotesindex', dBase);
-    traverse = traverse.nextElementSibling;
-    ++dBase;   
-  }
-  */
 }
 
 function testMove() {
