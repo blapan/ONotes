@@ -131,7 +131,9 @@ function addONote(ONote, index, parentDiv) {
   }
   selectableDiv.className = 'ONotesLabel';
   selectableDiv.setAttribute('data-onotesindex', index);
-  selectableDiv.appendChild(document.createTextNode(ONote.label));
+  var span = document.createElement('span');
+  span.appendChild(document.createTextNode(ONote.label))
+  selectableDiv.appendChild(span);
   selectableDiv.setAttribute('draggable', true);
   selectableDiv.addEventListener('dragstart', onoteDragStart);
   selectableDiv.addEventListener('dragenter', onoteDragEnter);
@@ -185,7 +187,7 @@ function selectOnote(e) {
   selectedDiv.classList.add('selected');
   ONotesEdit.disabled = false;
   ONotesEdit.value = getONote(selectedIndex).value;
-  ONotesDelete.classList.remove('disabled');;
+  ONotesDelete.classList.remove('disabled');
 }
 
 function updateONote() {
@@ -199,7 +201,7 @@ function updateONote() {
   var onoteObj = getONote(selectedIndex);
   if(typeof onoteObj.value != 'object') onoteObj.value = ONotesEdit.value;
   onoteObj.label = label;
-  selectedDiv.textContent = label;
+  selectedDiv.getElementsByTagName('span')[0].textContent = label;
 }
 
 function newOnote() {
