@@ -3,7 +3,8 @@ var dragData = {};
 function onoteDragStart(event) {
   event.dataTransfer.setData('text/plain', getONoteIndex(event.currentTarget));
   event.dataTransfer.effectAllowed = 'move';
-  selectOnote(event.currentTarget);
+  if(event.currentTarget.parentElement.classList.contains('folder')) toggleFolder(event, true);
+  else selectOnote(event);
 }
 
 function onoteDragEnter(event) {
@@ -44,6 +45,38 @@ function onoteDragOver(event) {
   if(relativeYpos <= dragData[i].pct20) dragData[i].pos = 'top';
   else if(relativeYpos <= dragData[i].pct70) dragData[i].pos = 'middle';
   else if(relativeYpos > dragData[i].pct70) dragData[i].pos = 'bottom';
+  
+  //Prevent the dragging folders to children of themselves
+  if(selectedDiv.parentElement.classList.contains('folder') && selectedDiv.parentElement.contains(t)) {
+    event.dataTransfer.effectAllowed = 'none';
+    return;
+  }
+  
+  var prevEl = t.previousElementSibling;
+  var nextEl = t.nextElementSibling;
+  if(t.parentElement.classList.contains('folder')) {
+    prevEl = t.parentElement.previousElementSibling;
+    nextEl = t.parentElement.nextElementSibling;
+  }
+  if(prevEl != undefined && prevEl.classList.contains('folder')) prevEl = prevEl.children[0];
+  if(nextEl != undefined && nextEl.classList.contains('folder')) nextEl = nextEl.children[0];
+  
+  //Prevent dropping an item onto itself
+  if(
+    t == selectedDiv || 
+    (nextEl == selectedDiv && dragData[i].pos == 'bottom') || 
+    (prevEl == selectedDiv && dragData[i].pos == 'top') ||
+    (prevEl == selectedDiv && dragData[i].pos == 'middle' && (prevEl == undefined || !prevEl.parentElement.classList.contains('folder')))
+  ) {
+    event.dataTransfer.effectAllowed = 'none';
+    return;
+  }
+  
+  //Prevent dropping an item above the trash
+  if(t.parentElement.id == 'ONotesTrash' && dragData[i].pos == 'top') {
+    event.dataTransfer.effectAllowed = 'none';
+    return;
+  }
   
   if(dragData[i].pos != dragData[i].prevPos) {
     dragData[i].prevPos = dragData[i].pos;

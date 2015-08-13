@@ -85,7 +85,7 @@ function initONotes(payload) {
   
   folderDivs = document.getElementsByClassName('folder');
   for(var i = 0; i < folderDivs.length; ++i) {
-    folderDivs[i].firstElementChild.addEventListener('click', toggleFolder);
+    folderDivs[i].children[0].addEventListener('click', toggleFolder);
   }
 }
 
@@ -180,7 +180,7 @@ function getONote(index) {
 
 function selectOnote(e) {
   if(selectedDiv != null) selectedDiv.classList.remove('selected');
-  if(e.constructor.name == 'MouseEvent') selectedDiv = e.currentTarget;
+  if(e.currentTarget != undefined) selectedDiv = e.currentTarget;
   else selectedDiv = e;
   
   selectedIndex = getONoteIndex(selectedDiv);
@@ -268,7 +268,7 @@ function deleteOnote() {
   }
 }
 
-function toggleFolder(event) {
+function toggleFolder(event, noToggle) {
   if(selectedDiv != null) selectedDiv.classList.remove('selected');
   selectedDiv = event.currentTarget;
   selectedIndex = getONoteIndex(selectedDiv);
@@ -285,12 +285,15 @@ function toggleFolder(event) {
   }
   var folderContentsDiv = selectedDiv.parentElement.getElementsByClassName('folderContents')[0];
   if(!folderContentsDiv.hasChildNodes()) return;
-  if(folderContentsDiv.classList.contains('open')) {
-    selectedDiv.getElementsByTagName('img')[0].src = 'onotes-triangleright-7.png';
-    folderContentsDiv.classList.remove('open');
+  if(!noToggle) {
+    if(folderContentsDiv.classList.contains('open')) {
+      selectedDiv.getElementsByTagName('img')[0].src = 'onotes-triangleright-7.png';
+      folderContentsDiv.classList.remove('open');
+    }
+    else {
+      selectedDiv.getElementsByTagName('img')[0].src = 'onotes-triangledown-7.png';
+      folderContentsDiv.classList.add('open');
+    }
   }
-  else {
-    selectedDiv.getElementsByTagName('img')[0].src = 'onotes-triangledown-7.png';
-    folderContentsDiv.classList.add('open');
-  }
+
 }
