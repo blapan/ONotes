@@ -3,14 +3,22 @@ var dragData = {};
 function onoteDragStart(event) {
   event.dataTransfer.setData('text/plain', getONoteIndex(event.currentTarget));
   event.dataTransfer.effectAllowed = 'move';
-  if(event.currentTarget.parentElement.classList.contains('folder')) toggleFolder(event, true);
-  else selectOnote(event);
+  if(event.currentTarget != selectedDiv) {
+    if(event.currentTarget.parentElement.classList.contains('folder')) toggleFolder(event, true);
+    else selectOnote(event);
+  }  
 }
 
 function onoteDragEnter(event) {
   event.preventDefault();
   event.dataTransfer.dropEffect = 'move';
-  var t = event.currentTarget;  
+  var t = event.currentTarget;
+  var folderEnd = false;
+  if(t.classList.contains('folderEndDiv')) {
+    t = t.previousElementSibling;
+    if(t.classList.contains('folder')) t = t.children[0];
+    folderEnd = true;
+  }
   var i = getONoteIndex(t);
   t.setAttribute('data-onotespath', i); //This can't be removed onLeave, not sure why
   dragData[i] = {
@@ -26,32 +34,41 @@ function onoteDragEnter(event) {
     folderOpen: false,
     folderEmpty: true,
     openFolderTimer: null,
+    folderEnd: folderEnd,
   }
   if(t.parentElement.classList.contains('folder')) {
     dragData[i].isFolder = true;
     dragData[i].folderContentsDiv = t.parentElement.getElementsByClassName('folderContents')[0];
     dragData[i].folderOpen = dragData[i].folderContentsDiv.classList.contains('open');
-    dragData[i].folderEmpty = !dragData[i].folderContentsDiv.hasChildNodes();
+    dragData[i].folderEmpty = dragData[i].folderContentsDiv.children.length <= 1;
   }
 }
 
 function onoteDragOver(event) {
   event.preventDefault();
-  event.dataTransfer.dropEffect = 'move';
-  var t = event.currentTarget;
-  var i = t.dataset.onotespath;
-  var relativeYpos = (event.pageY + document.getElementById('ONotesDisplay').scrollTop) - dragData[i].offsetTop;
-  
-  if(relativeYpos <= dragData[i].pct20) dragData[i].pos = 'top';
-  else if(relativeYpos <= dragData[i].pct70) dragData[i].pos = 'middle';
-  else if(relativeYpos > dragData[i].pct70) dragData[i].pos = 'bottom';
-  
   //Prevent the dragging folders to children of themselves
-  if(selectedDiv.parentElement.classList.contains('folder') && selectedDiv.parentElement.contains(t)) {
+  if(selectedDiv.parentElement.classList.contains('folder') && selectedDiv.parentElement.contains(event.currentTarget)) {
     event.dataTransfer.effectAllowed = 'none';
     return;
   }
+  event.dataTransfer.dropEffect = 'move';
   
+  var t = event.currentTarget;
+  var i = t.dataset.onotespath;
+  
+  if(t.classList.contains('folderEndDiv')) {
+    t = t.previousElementSibling;
+    if(t.classList.contains('folder')) t = t.children[0];
+    i = t.dataset.onotespath;
+    dragData[i].pos = 'bottom';
+  }
+  else {
+    var relativeYpos = (event.pageY + document.getElementById('ONotesDisplay').scrollTop) - dragData[i].offsetTop;  
+    if(relativeYpos <= dragData[i].pct20) dragData[i].pos = 'top';
+    else if(relativeYpos <= dragData[i].pct70) dragData[i].pos = 'middle';
+    else if(relativeYpos > dragData[i].pct70) dragData[i].pos = 'bottom';
+  }
+    
   var prevEl = t.previousElementSibling;
   var nextEl = t.nextElementSibling;
   if(t.parentElement.classList.contains('folder')) {
@@ -103,7 +120,7 @@ function onoteDragOver(event) {
         clearTimeout(dragData[i].openFolderTimer);
         dragData[i].openFolderTimer = null;
         if(dragData[i].isFolder) {
-          if(dragData[i].folderOpen) {
+          if(dragData[i].folderOpen && !dragData[i].folderEnd) {
             dragData[i].folderContentsDiv.children[0].classList.add('dropAbove');
           }
           else {
@@ -126,15 +143,26 @@ function onoteDragOpenFolder(folderContentsDiv) {
 
 function onoteDragLeave(event) {
   event.preventDefault();
-  clearTimeout(dragData[event.currentTarget.dataset.onotespath].openFolderTimer);
-  clearDropStyles(event.currentTarget);
+  var t = event.currentTarget;
+  if(t.classList.contains('folderEndDiv')) {
+    t = t.previousElementSibling;
+    if(t.classList.contains('folder')) t = t.children[0];
+  }
+  clearTimeout(dragData[t.dataset.onotespath].openFolderTimer);
+  clearDropStyles(t);
 }
 
 function onoteDrop(event) {
   event.preventDefault();
-  clearTimeout(dragData[event.currentTarget.dataset.onotespath].openFolderTimer);
-  clearDropStyles(event.currentTarget);
-  console.log('dropped ' + getONoteIndex(selectedDiv) + ' over: '+ event.currentTarget.dataset.onotespath + ' ' + dragData[event.currentTarget.dataset.onotespath].pos);
+  var t = event.currentTarget;
+  if(t.classList.contains('folderEndDiv')) {
+    t = t.previousElementSibling;
+    if(t.classList.contains('folder')) t = t.children[0];
+    dragData[t.dataset.onotespath].pos = 'bottom';
+  }
+  clearTimeout(dragData[t.dataset.onotespath].openFolderTimer);
+  clearDropStyles(t);
+  console.log('dropped ' + getONoteIndex(selectedDiv) + ' over: '+ t.dataset.onotespath + ' ' + dragData[t.dataset.onotespath].pos);
   dragData = {};  
 }
 
@@ -167,7 +195,7 @@ function onoteMove(source, dest, pos) {
       var dParrent = dest.getElementsByClassName('folderContents')[0];
       if(dPath == '') dPath = dBase.toString();
       else dPath = dPath + '.' + dBase;
-      if(!dParrent.hasChildNodes()) dBase = '0';
+      if(dParrent.children.length <= 1) dBase = '0';
       else if(dParrent.lastChild.classList.contains('folder')) dBase = (parseInt(dParrent.lastChild.getElementsByClassName('ONotesLabel')[0].dataset.onotesindex) + 1).toString();
       else dBase = (parseInt(dParrent.lastChild.dataset.onotesindex) + 1).toString();
       dest = null;

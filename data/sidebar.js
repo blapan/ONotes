@@ -9,6 +9,9 @@ var ONotesDelete = document.getElementById('ONotesDelete');
 var selectedDiv = null;
 var selectedIndex = -1;
 
+ONotesEdit.value = '';
+ONotesEdit.disabled = true;
+
 if(typeof addon != 'undefined') {
   addon.port.once("onotes-data-init", initONotes);
   addon.port.on("onotes-new", addONote);
@@ -34,6 +37,10 @@ else {
       ] },
       { label: "SUBTEST3", value: "SUBTEST3" },
       { label: "SUBTEST4", value: "SUBTEST4" },
+      { label: "SUBTEST5 SUBFOLDER", value: [
+        { label: "SUBTEST5 SUBFOLDER-SUBTEST0", value: "SUBTEST5 SUBFOLDER-SUBTEST0" },
+        { label: "SUBTEST5 SUBFOLDER-SUBTEST1", value: "SUBTEST5 SUBFOLDER-SUBTEST1" }
+      ] },
     ] },    
     { label: "TEST11", value: "TEST11" },
     { label: "TEST12", value: "TEST12" },
@@ -119,6 +126,13 @@ function addONote(ONote, index, parentDiv) {
       //addONote(ONote.value[i], index + '.' + i, folderContents);
       addONote(ONote.value[i], i, folderContents);
     }
+    var folderEndDiv = document.createElement('div');
+    folderEndDiv.className = 'folderEndDiv';
+    folderEndDiv.addEventListener('dragenter', onoteDragEnter);
+    folderEndDiv.addEventListener('dragover', onoteDragOver);
+    folderEndDiv.addEventListener('dragleave', onoteDragLeave);
+    folderEndDiv.addEventListener('drop', onoteDrop);
+    folderContents.appendChild(folderEndDiv);
     e.appendChild(folderLabel);
     e.appendChild(folderContents);
   }
@@ -180,14 +194,25 @@ function getONote(index) {
 
 function selectOnote(e) {
   if(selectedDiv != null) selectedDiv.classList.remove('selected');
+  var prevSelectedDiv = selectedDiv;
   if(e.currentTarget != undefined) selectedDiv = e.currentTarget;
   else selectedDiv = e;
   
-  selectedIndex = getONoteIndex(selectedDiv);
-  selectedDiv.classList.add('selected');
-  ONotesEdit.disabled = false;
-  ONotesEdit.value = getONote(selectedIndex).value;
-  ONotesDelete.classList.remove('disabled');
+  
+  if(prevSelectedDiv == selectedDiv) {
+    selectedDiv = null;
+    selectedIndex = -1;
+    ONotesEdit.disabled = true;
+    ONotesEdit.value = '';
+    ONotesDelete.classList.add('disabled');
+  }
+  else {  
+    selectedIndex = getONoteIndex(selectedDiv);
+    selectedDiv.classList.add('selected');
+    ONotesEdit.disabled = false;
+    ONotesEdit.value = getONote(selectedIndex).value;
+    ONotesDelete.classList.remove('disabled');
+  }
 }
 
 function updateONote() {
@@ -284,7 +309,7 @@ function toggleFolder(event, noToggle) {
     ONotesDelete.classList.remove('disabled');
   }
   var folderContentsDiv = selectedDiv.parentElement.getElementsByClassName('folderContents')[0];
-  if(!folderContentsDiv.hasChildNodes()) return;
+  if(folderContentsDiv.children.length <= 1) return;
   if(!noToggle) {
     if(folderContentsDiv.classList.contains('open')) {
       selectedDiv.getElementsByTagName('img')[0].src = 'onotes-triangleright-7.png';

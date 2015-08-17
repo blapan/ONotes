@@ -8,7 +8,7 @@
     <div id="ONotesToolbar">
       <div id="ONotesNewNote" class="ONotesButton" title="New Note"><img src="silk/note_add.png" draggable="false" /></div>
       <div id="ONotesNewFolder" class="ONotesButton" title="New Folder"><img src="silk/folder_add.png" draggable="false" /></div>
-      <div id="ONotesDelete" class="ONotesButton" title="Delete" class="disabled"><img src="silk/delete.png" draggable="false" /></div>
+      <div id="ONotesDelete" class="ONotesButton disabled" title="Delete"><img src="silk/delete.png" draggable="false" /></div>
     </div>
     <div id="ONotesDisplay">
       <div id="ONotesTrash" class="folder">
@@ -18,7 +18,7 @@
       <div id="ONotesList"></div>
     </div>
     
-    <textarea id="ONotesEdit" ondrop="return false;" ondragover="event.preventDefault(); event.dataTransfer.effectAllowed = 'none';"></textarea>
+    <textarea id="ONotesEdit" ondrop="return false;" ondragover="event.preventDefault(); event.dataTransfer.effectAllowed = 'none';" disabled="disabled"></textarea>
   </body>
   <script type="text/javascript" src="sidebarDragFunctions.js"></script>
   <script type="text/javascript" src="sidebar.js"></script>

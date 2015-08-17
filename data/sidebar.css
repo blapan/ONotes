@@ -110,6 +110,15 @@ div.folderContents.open {
   display: block;
 }
 
+div.folderEndDiv {
+  display: none;
+}
+
+div.folder + div.folderEndDiv {
+  height: 6px;
+  display: block;
+}
+
 /* END FOLDER STYLES */
 
 textarea#ONotesEdit {
