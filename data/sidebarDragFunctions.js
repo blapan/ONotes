@@ -183,7 +183,7 @@ function onoteMove(source, dest, pos) {
   var dPath = dIndex.slice(0, dIndex.lastIndexOf('.') > 0 ? dIndex.lastIndexOf('.') : 0);
   var dBase = dIndex == 'trash' ? 'trash' : parseInt(dIndex.slice(dIndex.lastIndexOf('.') + 1));
   var dParrent = dest.parentElement;
-  
+    
   if(source.parentElement.classList.contains('folder')) {
     source = source.parentElement;
   }
@@ -193,12 +193,13 @@ function onoteMove(source, dest, pos) {
     dParrent = dest.parentElement;
     if(pos == 'middle') {
       var dParrent = dest.getElementsByClassName('folderContents')[0];
+      var lastItem = dParrent.lastChild.previousElementSibling; //Account for folderEndDiv
       if(dPath == '') dPath = dBase.toString();
       else dPath = dPath + '.' + dBase;
       if(dParrent.children.length <= 1) dBase = '0';
-      else if(dParrent.lastChild.classList.contains('folder')) dBase = (parseInt(dParrent.lastChild.getElementsByClassName('ONotesLabel')[0].dataset.onotesindex) + 1).toString();
-      else dBase = (parseInt(dParrent.lastChild.dataset.onotesindex) + 1).toString();
-      dest = null;
+      else if(lastItem.classList.contains('folder')) dBase = (parseInt(lastItem.getElementsByClassName('ONotesLabel')[0].dataset.onotesindex) + 1).toString();
+      else dBase = (parseInt(lastItem.dataset.onotesindex) + 1).toString();
+      dest = dParrent.lastChild;
     }
   }  
   
@@ -231,7 +232,7 @@ function onoteMove(source, dest, pos) {
   else dest.parentElement.insertBefore(source, dest);
   
   var traverse = source;
-  while(traverse != null && ((shiftUp && dBase >= sBase) || dBase <= sBase || sPath != dPath)) {
+  while(traverse != null && !traverse.classList.contains('folderEndDiv') && ((shiftUp && dBase >= sBase) || dBase <= sBase || sPath != dPath)) {
     if(dFolder[dBase] === undefined || dFolder[dBase].deleted) {
       if(shiftUp) --dBase;
       else ++dBase;
@@ -250,65 +251,87 @@ function onoteMove(source, dest, pos) {
   }
 }
 
-function testMove() {
+function testMove(stopPoint) {
   console.log('TEST 01 - TEST14 above TEST1');
   onoteMove(document.getElementById('TEST14'), document.getElementById('TEST1'), 'top');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  if(stopPoint != undefined && stopPoint == 1) return true;
   console.log('TEST 02 - TEST11 below TEST10 FOLDER');
   onoteMove(document.getElementById('TEST11'), document.getElementById('TEST10 FOLDER'), 'bottom');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  if(stopPoint != undefined && stopPoint == 2) return true;
   console.log('TEST 03 - TEST14 into TEST10 FOLDER');
   onoteMove(document.getElementById('TEST14'), document.getElementById('TEST10 FOLDER'), 'middle');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  if(stopPoint != undefined && stopPoint == 3) return true;
   console.log('TEST 04 - TEST10 FOLDER below TEST12');
   onoteMove(document.getElementById('TEST10 FOLDER'), document.getElementById('TEST12'), 'bottom');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  if(stopPoint != undefined && stopPoint == 4) return true;
   console.log('TEST 05 - TEST1 below TEST16');
   onoteMove(document.getElementById('TEST1'), document.getElementById('TEST16'), 'bottom');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  if(stopPoint != undefined && stopPoint == 5) return true;
   console.log('TEST 06 - TEST3 below SUBTEST2 SUBFOLDER-SUBTEST1');
   onoteMove(document.getElementById('TEST3'), document.getElementById('SUBTEST2 SUBFOLDER-SUBTEST1'), 'bottom');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  if(stopPoint != undefined && stopPoint == 6) return true;
   console.log('TEST 07 - TEST16 above SUBTEST2 SUBFOLDER-SUBTEST0');
   onoteMove(document.getElementById('TEST6'), document.getElementById('SUBTEST2 SUBFOLDER-SUBTEST0'), 'top');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  if(stopPoint != undefined && stopPoint == 7) return true;
   console.log('TEST 08 - TEST2 into TEST17 EMPTY FOLDER');
   onoteMove(document.getElementById('TEST2'), document.getElementById('TEST17 EMPTY FOLDER'), 'middle');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  if(stopPoint != undefined && stopPoint == 8) return true;
   console.log('TEST 09 - TEST0 below TEST17 EMPTY FOLDER');
   onoteMove(document.getElementById('TEST0'), document.getElementById('TEST17 EMPTY FOLDER'), 'bottom');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  if(stopPoint != undefined && stopPoint == 9) return true;
   console.log('TEST 10 - SUBTEST2 SUBFOLDER into TEST17 EMPTY FOLDER');
   onoteMove(document.getElementById('SUBTEST2 SUBFOLDER'), document.getElementById('TEST17 EMPTY FOLDER'), 'middle');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  if(stopPoint != undefined && stopPoint == 10) return true;
   console.log('TEST 11 - TEST4 below TEST22');
   onoteMove(document.getElementById('TEST4'), document.getElementById('TEST22'), 'bottom');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  if(stopPoint != undefined && stopPoint == 11) return true;
   console.log('TEST 12 - TEST17 EMPTY FOLDER below TEST4');
   onoteMove(document.getElementById('TEST17 EMPTY FOLDER'), document.getElementById('TEST4'), 'bottom');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  if(stopPoint != undefined && stopPoint == 12) return true;
   console.log('TEST 13 - TEST18 below TEST8');
   onoteMove(document.getElementById('TEST18'), document.getElementById('TEST8'), 'bottom');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  if(stopPoint != undefined && stopPoint == 13) return true;
   console.log('TEST 14 - TEST FOLDER IN TRASH into TEST10 FOLDER');
   onoteMove(document.getElementById('TEST FOLDER IN TRASH'), document.getElementById('TEST10 FOLDER'), 'middle');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  if(stopPoint != undefined && stopPoint == 14) return true;
   console.log('TEST 15 - TEST17 EMPTY FOLDER above SUBTEST4');
   onoteMove(document.getElementById('TEST17 EMPTY FOLDER'), document.getElementById('SUBTEST4'), 'top');
+  if(!checkTree(document.getElementById('ONotesList'))) return false;
+  if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  console.log('TEST 16 - TEST FOLDER IN TRASH into Trash');
+  onoteMove(document.getElementById('TEST FOLDER IN TRASH'), document.getElementById('ONotesTrash').getElementsByClassName('ONotesLabel')[0], 'middle');
+  if(!checkTree(document.getElementById('ONotesList'))) return false;
+  if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
+  console.log('TEST 17 - TEST22 into Trash');
+  onoteMove(document.getElementById('TEST22'), document.getElementById('ONotesTrash').getElementsByClassName('ONotesLabel')[0], 'middle');
   if(!checkTree(document.getElementById('ONotesList'))) return false;
   if(!checkTree(document.getElementById('ONotesTrash').getElementsByClassName('folderContents')[0])) return false;
   console.log('TEST COMPLETE');
@@ -320,6 +343,7 @@ function checkTree(root) {
   var noErrorsFolder = true;
   for(var i = 0; i < root.children.length; ++i) {
     var onotediv = root.children[i];
+    if(onotediv.classList.contains('folderEndDiv')) continue;
     if(onotediv.classList.contains('folder')) {
       onotediv = onotediv.getElementsByClassName('ONotesLabel')[0];
     }
@@ -333,8 +357,8 @@ function checkTree(root) {
       console.error('COULD NOT GET DATA FOR INDEX', onoteIndex, '@', onotediv);
       return false;
     }
-    if(onotediv.textContent != onoteData.label) {
-      console.error(onotediv.textContent, 'DOES NOT MATCH', onoteData.label, 'AT INDEX', onoteIndex);
+    if(onotediv.getElementsByTagName('span')[0].textContent != onoteData.label) {
+      console.error(onotediv.getElementsByTagName('span')[0].textContent, 'DOES NOT MATCH', onoteData.label, 'AT INDEX', onoteIndex);
       noErrors = false;
     }
     if(onotediv.parentElement.classList.contains('folder')) {

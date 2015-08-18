@@ -80,6 +80,14 @@ function initONotes(payload) {
     }
   }
   
+  var folderEndDiv = document.createElement('div');
+  folderEndDiv.className = 'folderEndDiv';
+  folderEndDiv.addEventListener('dragenter', onoteDragEnter);
+  folderEndDiv.addEventListener('dragover', onoteDragOver);
+  folderEndDiv.addEventListener('dragleave', onoteDragLeave);
+  folderEndDiv.addEventListener('drop', onoteDrop);
+  ONotesTrash.getElementsByClassName('folderContents')[0].appendChild(folderEndDiv);
+  
   ONotesEdit.addEventListener('keyup', updateONote);
   ONotesNewNote.addEventListener('click', newOnote);
   ONotesNewFolder.addEventListener('click', newOnoteFolder);
