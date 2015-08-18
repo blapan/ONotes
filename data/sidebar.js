@@ -88,7 +88,19 @@ function initONotes(payload) {
   folderEndDiv.addEventListener('drop', onoteDrop);
   ONotesTrash.getElementsByClassName('folderContents')[0].appendChild(folderEndDiv);
   
+  document.getElementById('ONotesToolbar').addEventListener('dragover', function(event) {
+    var displayDiv = document.getElementById('ONotesDisplay');
+    if(displayDiv.scrollTop > 0) displayDiv.scrollTop -= 10;
+  });
+  
   ONotesEdit.addEventListener('keyup', updateONote);
+  ONotesEdit.addEventListener('dragover', function(event) {
+    event.preventDefault();
+    event.dataTransfer.effectAllowed = 'none';
+    var displayDiv = document.getElementById('ONotesDisplay');
+    if(displayDiv.scrollTop < displayDiv.scrollTopMax) displayDiv.scrollTop += 10;
+  });
+  ONotesEdit.addEventListener('drop', function() { return false; });
   ONotesNewNote.addEventListener('click', newOnote);
   ONotesNewFolder.addEventListener('click', newOnoteFolder);
   ONotesDelete.addEventListener('click', deleteOnote);
@@ -97,11 +109,7 @@ function initONotes(payload) {
   ONotesTrash.children[0].addEventListener('dragover', onoteDragOver);
   ONotesTrash.children[0].addEventListener('dragleave', onoteDragLeave);
   ONotesTrash.children[0].addEventListener('drop', onoteDrop);
-  
-  folderDivs = document.getElementsByClassName('folder');
-  for(var i = 0; i < folderDivs.length; ++i) {
-    folderDivs[i].children[0].addEventListener('click', toggleFolder);
-  }
+  ONotesTrash.children[0].addEventListener('click', toggleFolder);
 }
 
 function addONote(ONote, index, parentDiv) {
@@ -140,6 +148,8 @@ function addONote(ONote, index, parentDiv) {
     folderEndDiv.addEventListener('dragover', onoteDragOver);
     folderEndDiv.addEventListener('dragleave', onoteDragLeave);
     folderEndDiv.addEventListener('drop', onoteDrop);
+    folderLabel.className = 'ONotesLabel folderLabel';
+    folderLabel.addEventListener('click', toggleFolder);
     folderContents.appendChild(folderEndDiv);
     e.appendChild(folderLabel);
     e.appendChild(folderContents);
@@ -150,8 +160,8 @@ function addONote(ONote, index, parentDiv) {
     noteImg.setAttribute('draggable', false);
     e.appendChild(noteImg);
     e.addEventListener('click', selectOnote);
+    e.className = 'ONotesLabel';
   }
-  selectableDiv.className = 'ONotesLabel';
   selectableDiv.setAttribute('data-onotesindex', index);
   var span = document.createElement('span');
   span.appendChild(document.createTextNode(ONote.label))
@@ -204,8 +214,7 @@ function selectOnote(e) {
   if(selectedDiv != null) selectedDiv.classList.remove('selected');
   var prevSelectedDiv = selectedDiv;
   if(e.currentTarget != undefined) selectedDiv = e.currentTarget;
-  else selectedDiv = e;
-  
+  else selectedDiv = e;  
   
   if(prevSelectedDiv == selectedDiv) {
     selectedDiv = null;
@@ -243,7 +252,8 @@ function newOnote() {
 }
 
 function newOnoteFolder() {
-  
+  newFolderDiv = addONote({ label: '', value: []});
+  toggleFolder(newFolderDiv);
 }
 
 function deleteOnote() {
@@ -301,9 +311,10 @@ function deleteOnote() {
   }
 }
 
-function toggleFolder(event, noToggle) {
+function toggleFolder(e, noToggle) {
   if(selectedDiv != null) selectedDiv.classList.remove('selected');
-  selectedDiv = event.currentTarget;
+  if(e.currentTarget != undefined) selectedDiv = e.currentTarget;
+  else selectedDiv = e;
   selectedIndex = getONoteIndex(selectedDiv);
   selectedDiv.classList.add('selected');
   if(selectedDiv.parentElement.id == 'ONotesTrash') {

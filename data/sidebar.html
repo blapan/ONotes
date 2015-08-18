@@ -12,13 +12,13 @@
     </div>
     <div id="ONotesDisplay">
       <div id="ONotesTrash" class="folder">
-        <div class="ONotesLabel trashLabel" data-onotesindex="trash"><img src="onotes-triangleright-7.png" draggable="false" /><img src="onotes-trash-14.png" draggable="false" /><span>Trash</span></div>
+        <div class="ONotesLabel folderLabel trashLabel" data-onotesindex="trash"><img src="onotes-triangleright-7.png" draggable="false" /><img id="trashIcon" src="onotes-trash-14.png" draggable="false" /><span>Trash</span></div>
         <div class="folderContents trashFolder"></div>
       </div>
       <div id="ONotesList"></div>
     </div>
     
-    <textarea id="ONotesEdit" ondrop="return false;" ondragover="event.preventDefault(); event.dataTransfer.effectAllowed = 'none';" disabled="disabled"></textarea>
+    <textarea id="ONotesEdit" disabled="disabled"></textarea>
   </body>
   <script type="text/javascript" src="sidebarDragFunctions.js"></script>
   <script type="text/javascript" src="sidebar.js"></script>

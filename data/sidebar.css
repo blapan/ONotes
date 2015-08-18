@@ -70,10 +70,14 @@ div#ONotesDisplay {
 }
 
 div.ONotesLabel {
-  padding: 2px 5px;
+  padding: 2px 14px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+div.ONotesLabel.folderLabel {
+  padding-left: 5px;
 }
 
 div.ONotesLabel.selected {
@@ -87,6 +91,10 @@ div.ONotesLabel img {
 
 div.ONotesLabel.trashLabel.nonEmpty {
   font-weight: bold;
+}
+
+img#trashIcon {
+  margin-left: 2px;
 }
 
 /* END ONOTES STYLES */
