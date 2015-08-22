@@ -288,6 +288,7 @@ function deleteOnote() {
   
   if(sendToTrash) {
     onoteMove(selectedDiv, ONotesTrash.getElementsByClassName('ONotesLabel')[0], 'middle');
+    ONotesTrash.getElementsByClassName('ONotesLabel')[0].classList.add('nonEmpty');
   }
   else {
     if(selectedDiv.parentElement.classList.contains('folder')) selectedDiv.parentElement.remove();
