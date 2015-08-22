@@ -31,14 +31,17 @@ var ONotesCreate = cm.Item({
 
 var ONotesMenu = cm.Menu({
   label: "Insert ONote",
-  context: cm.SelectorContext('input[type="text"], textarea'),
-  //context: cm.PredicateContext(function(element) { return element.matches('input[type="text"], textarea') && ONotesMenu.items.length > 0 }),
+  context: [
+    cm.SelectorContext('input[type="text"], textarea'),
+    cm.PredicateContext(function() { return ONotesMenu.items.length > 0 }),
+  ],
   contentScript: 'self.on("click", function(node, data) { node.value += data; });',
-  items: [
-    cm.Item({ label: "Item 3", data: "item3" })
-  ]
+  //items: [
+    //cm.Item({ label: "Item 3", data: "item3" })
+  //]
 });
 
+if(!ss.storage.ONotesTrashArr) ss.storage.ONotesTrashArr = [];
 if(!ss.storage.ONotesArr) ss.storage.ONotesArr = [];
 else {
   for(var i = 0; i < ss.storage.ONotesArr.length; ++i) {
@@ -52,7 +55,14 @@ var ONotesSidebar = sb.Sidebar({
   title: 'ONotes',
   url: "./sidebar.html",
   onHide: function() { ONotesButton.state("window", null); ONotesButton.checked = false; },
-  onReady: function(worker) { ONotesSidebarWorker = worker; ONotesSidebarWorker.port.emit("onotes-data-init", ss.storage.ONotesArr); }
+  onReady: function(worker) {
+    ONotesSidebarWorker = worker;
+    var payload = {
+      ONotesTrashArr: ss.storage.ONotesTrashArr,
+      ONotesArr: ss.storage.ONotesArr,
+    };
+    ONotesSidebarWorker.port.emit("onotes-data-init", payload);
+  }
 });
 
 var ONotesButton = ToggleButton({
