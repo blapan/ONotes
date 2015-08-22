@@ -1,7 +1,9 @@
 var dragData = {};
 
 function onoteDragStart(event) {
-  event.dataTransfer.setData('text/plain', getONoteIndex(event.currentTarget));
+  var ONote = getONote(getONoteIndex(event.currentTarget));
+  var data = (typeof ONote.value == 'object') ? ONote.label : ONote.value;
+  event.dataTransfer.setData('text/plain', data);
   event.dataTransfer.effectAllowed = 'move';
   if(event.currentTarget != selectedDiv) {
     if(event.currentTarget.parentElement.classList.contains('folder')) toggleFolder(event, true);
@@ -162,7 +164,7 @@ function onoteDrop(event) {
   }
   clearTimeout(dragData[t.dataset.onotespath].openFolderTimer);
   clearDropStyles(t);
-  console.log('dropped ' + getONoteIndex(selectedDiv) + ' over: '+ t.dataset.onotespath + ' ' + dragData[t.dataset.onotespath].pos);
+  onoteMove(selectedDiv, t, dragData[t.dataset.onotespath].pos);
   dragData = {};  
 }
 
@@ -247,7 +249,7 @@ function onoteMove(source, dest, pos) {
     else {
       traverse = traverse.nextElementSibling;
       ++dBase;  
-    } 
+    }
   }
 }
 
