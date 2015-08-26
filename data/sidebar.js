@@ -14,7 +14,7 @@ ONotesEdit.disabled = true;
 
 if(typeof addon != 'undefined') {
   addon.port.once("onotes-data-init", initONotes);
-  addon.port.on("onotes-new", addONote);
+  addon.port.on("onotes-addon-new", addONote);
 }
 else {
   ONotesArr = [
@@ -200,8 +200,7 @@ function getONote(index) {
       indexArr.shift();
       temp = ONotesTrashArr;
     }
-  }
-  
+  }  
   
   for(var i = 0; i < indexArr.length; ++i) {
     if(i == 0) temp = temp[indexArr[i]];
@@ -244,14 +243,17 @@ function updateONote() {
   if(typeof onoteObj.value != 'object') onoteObj.value = ONotesEdit.value;
   onoteObj.label = label;
   selectedDiv.getElementsByTagName('span')[0].textContent = label;
+  if(typeof addon != 'undefined') addon.port.emit('onotes-update', { index: selectedIndex, ONote: onoteObj });
 }
 
 function newOnote() {
+  if(typeof addon != 'undefined') addon.port.emit('onotes-sidebar-new', { label: '', value: '' });
   newOnoteDiv = addONote({ label: '', value: '' });
   selectOnote(newOnoteDiv);
 }
 
 function newOnoteFolder() {
+  if(typeof addon != 'undefined') addon.port.emit('onotes-folder-new', { label: '', value: [] });
   newFolderDiv = addONote({ label: '', value: []});
   toggleFolder(newFolderDiv);
 }
@@ -284,7 +286,7 @@ function deleteOnote() {
   //selected item is after a note
   else if(prevElement != null) {
     nextSelectedDiv = prevElement;
-  }  
+  }
   
   if(sendToTrash) {
     onoteMove(selectedDiv, ONotesTrash.getElementsByClassName('ONotesLabel')[0], 'middle');
@@ -299,6 +301,7 @@ function deleteOnote() {
       ONotesTrash.getElementsByClassName('ONotesLabel')[0].classList.remove('nonEmpty');
     }
     getONote(selectedIndex).deleted = true;
+    if(typeof addon != 'undefined') addon.port.emit('onotes-delete', selectedIndex);
   }
   
   if(nextSelectedDiv != null) {

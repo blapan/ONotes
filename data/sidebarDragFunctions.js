@@ -180,6 +180,7 @@ function clearDropStyles(t) {
 function onoteMove(source, dest, pos) {
   var sIndex = getONoteIndex(source);
   var dIndex = getONoteIndex(dest);
+  if(typeof addon != 'undefined') addon.port.emit('onotes-move', {source: sIndex, dest: dIndex, pos: pos});
   var sPath = sIndex.slice(0, sIndex.lastIndexOf('.') > 0 ? sIndex.lastIndexOf('.') : 0);
   var sBase = parseInt(sIndex.slice(sIndex.lastIndexOf('.') + 1));
   var dPath = dIndex.slice(0, dIndex.lastIndexOf('.') > 0 ? dIndex.lastIndexOf('.') : 0);
