@@ -73,33 +73,35 @@ function onoteDragOver(event) {
     
   var prevEl = t.previousElementSibling;
   var nextEl = t.nextElementSibling;
+  var firstFolderItem = null;
   if(t.parentElement.classList.contains('folder')) {
     prevEl = t.parentElement.previousElementSibling;
     nextEl = t.parentElement.nextElementSibling;
+    firstFolderItem = t.parentElement.getElementsByClassName('folderContents')[0].children[0];
   }
   if(prevEl != undefined && prevEl.classList.contains('folder')) prevEl = prevEl.children[0];
   if(nextEl != undefined && nextEl.classList.contains('folder')) nextEl = nextEl.children[0];
   
   //Prevent dropping an item onto itself
   if(
-    t == selectedDiv || 
+    t == selectedDiv ||
+    (firstFolderItem == selectedDiv && dragData[i].pos == 'bottom') ||
     (nextEl == selectedDiv && dragData[i].pos == 'bottom') || 
     (prevEl == selectedDiv && dragData[i].pos == 'top') ||
     (prevEl == selectedDiv && dragData[i].pos == 'middle' && (prevEl == undefined || !prevEl.parentElement.classList.contains('folder')))
   ) {
     event.dataTransfer.effectAllowed = 'none';
-    return;
   }
   
   //Prevent dropping an item above the trash
   if(t.parentElement.id == 'ONotesTrash' && dragData[i].pos == 'top') {
     event.dataTransfer.effectAllowed = 'none';
-    return;
   }
   
   if(dragData[i].pos != dragData[i].prevPos) {
     dragData[i].prevPos = dragData[i].pos;
     clearDropStyles(t);
+    if(event.dataTransfer.effectAllowed == 'none') return;
 
     switch(dragData[i].pos) {
       case 'top':
@@ -157,15 +159,22 @@ function onoteDragLeave(event) {
 function onoteDrop(event) {
   event.preventDefault();
   var t = event.currentTarget;
+  var folderEndDiv = false;
   if(t.classList.contains('folderEndDiv')) {
     t = t.previousElementSibling;
     if(t.classList.contains('folder')) t = t.children[0];
     dragData[t.dataset.onotespath].pos = 'bottom';
+    folderEndDiv = true;
   }
-  clearTimeout(dragData[t.dataset.onotespath].openFolderTimer);
+  var dd = dragData[t.dataset.onotespath];
+  clearTimeout(dd.openFolderTimer);
   clearDropStyles(t);
-  onoteMove(selectedDiv, t, dragData[t.dataset.onotespath].pos);
-  dragData = {};  
+  if(dd.isFolder && dd.folderOpen && dd.pos == 'bottom' && !folderEndDiv) {
+    t = dd.folderContentsDiv.children[0];
+    dd.pos = 'top';
+  }
+  onoteMove(selectedDiv, t, dd.pos);
+  dragData = {};
 }
 
 function clearDropStyles(t) {

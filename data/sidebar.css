@@ -145,6 +145,11 @@ div.dropBelow + div {
   border-top: 1px dashed black;
 }
 
-div.dropBelow:last-child {
+div.dropBelow:nth-last-child(2):not(.folder) {
   border-bottom: 1px dashed black;
+}
+
+div.folder.dropBelow + div.folderEndDiv {
+  border-top: 1px dashed black;
+  border-bottom: none;
 }
