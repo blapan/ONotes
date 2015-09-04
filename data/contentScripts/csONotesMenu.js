@@ -1,0 +1,1 @@
+self.on("click", function(node, data) { node.value += data; });
