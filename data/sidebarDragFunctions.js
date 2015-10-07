@@ -233,10 +233,14 @@ function onoteMove(source, dest, pos) {
   
   if(sPath != dPath) {
     //Clone the source object so isn't deleted in the next step
-    var clone = Object.assign({}, sFolder[sBase]);
+    //var clone = Object.assign({}, sFolder[sBase]);
     //Leave the index intact so that the data-* HTML attributes don't need to be updated in the source folder
-    sFolder[sBase] = undefined;
-    dFolder.splice(dBase, 0, clone);
+    //sFolder[sBase] = undefined;
+    //dFolder.splice(dBase, 0, clone);
+    
+    var temp = sFolder[sBase];
+    sFolder[sBase] = null;
+    dFolder.splice(dBase, 0, temp);
   }
   else dFolder.splice(dBase, 0, sFolder.splice(sBase, 1)[0]);
   
@@ -245,7 +249,7 @@ function onoteMove(source, dest, pos) {
   
   var traverse = source;
   while(traverse != null && !traverse.classList.contains('folderEndDiv') && ((shiftUp && dBase >= sBase) || dBase <= sBase || sPath != dPath)) {
-    if(dFolder[dBase] === undefined || dFolder[dBase].deleted) {
+    if(dFolder[dBase] === null || dFolder[dBase].deleted) {
       if(shiftUp) --dBase;
       else ++dBase;
       continue;

@@ -10,10 +10,19 @@ var { ONotesMenuManager } = require('./data/lib/ONotesMenuManager');
 if(!ss.storage.ONotesTrashArr) ss.storage.ONotesTrashArr = [];
 if(!ss.storage.ONotesArr) ss.storage.ONotesArr = [];
 
-var odm = new ONotesDataManager(ss.storage.ONotesArr, ss.storage.ONotesTrashArr);
-var omm = new ONotesMenuManager(odm);
+var testArr = [
+  { label: "TEST0", value: "TEST0" },
+  { label: "TEST1 FOLDER", value: [
+    { label: "SUBTEST0", value: "SUBTEST0" },
+    { label: "SUBTEST1", value: "SUBTEST1" },
+  ] },
+  { label: "TEST2", value: "TEST2" },
+];
+var testTrash = [];
 
-omm.build(ss.storage.ONotesArr);
+//var odm = new ONotesDataManager(ss.storage.ONotesArr, ss.storage.ONotesTrashArr);
+var odm = new ONotesDataManager(testArr, testTrash);
+var omm = new ONotesMenuManager(odm);
 
 var ONotesSidebar = sb.Sidebar({
   id: 'onotes-sidebar',
