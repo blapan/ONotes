@@ -24,7 +24,7 @@ img {
 div#ONotesToolbar {
   background: linear-gradient(#E6E3DF, #D4D0C8); /*#E4E1DC;*/
   padding: 10px 5px;
-  height: calc(16px + 2px);
+  /*height: calc(16px + 2px);*/
 }
 
 div.ONotesButton {
