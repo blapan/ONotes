@@ -1,5 +1,6 @@
-#ONotes
-Replicates functionality of the Notes feature in Opera v12 that was removed in recent versions.
+# ONotes
+
+A Firefox extension that replicates functionality of the Notes feature in Opera v12 that was removed in recent versions.
 
 This extension uses parts of the following free icon sets:
 
