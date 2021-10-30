@@ -1,9 +1,25 @@
-function ONotesDataManager(data, trash) {
-  this.data = data;
-  this.trash = trash;
+function ONotesDataManager() {
+  this.loaded = false;
 }
 
 ONotesDataManager.prototype = {
+  load: async function() {
+    var temp = await browser.storage.local.get(null);
+    if(typeof temp.ONotesArr == 'undefined') {
+      temp.ONotesArr = [];
+      await browser.storage.local.set({ONotesArr: []});
+    }
+    if(typeof temp.ONotesTrashArr == 'undefined') {
+      temp.ONotesTrashArr = [];
+      await browser.storage.local.set({ONotesTrashArr: []});
+    }
+    this.data = temp.ONotesArr;
+    this.trash = temp.ONotesTrashArr;
+    this.loaded = true;
+  },
+  save: async function() {
+    await browser.storage.local.set({ONotesArr: this.data, ONotesTrashArr: this.trash});
+  },
   get: function(index) {
     var temp = this.data;
     var indexArr = [];
@@ -26,6 +42,17 @@ ONotesDataManager.prototype = {
     this.data.push(ONote);
   },
   
+  create: function(text, type) {
+    var labels = this.createLabel(text);
+    if(type == 'folder') {
+      var ret = { label: labels.label, menuLabel: labels.menuLabel, value: [] };
+    }
+    else {
+      var ret = { label: labels.label, menuLabel: labels.menuLabel, value: text };
+    }
+    return ret;
+  },
+  
   createLabel: function(text) {
     var ret = { label: '', menuLabel: ''};
     if(text.indexOf('\n') != -1) ret.label = text.substring(0, text.indexOf('\n'));
@@ -43,5 +70,3 @@ ONotesDataManager.prototype = {
     return ret;
   }
 }
-
-if(typeof exports != 'undefined') exports.ONotesDataManager = ONotesDataManager;

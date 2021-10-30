@@ -1,6 +1,6 @@
 {
 	"manifest_version": 2,
-	"name": "onotes",
+	"name": "ONotes",
 	"version": "0.0.2",
 	"description": "Replicates functionality of the Notes feature in Opera v12 that was removed in recent versions.",
 	"author": "Brian LaPan",
@@ -10,7 +10,7 @@
 		"64": "data/onotes-icon-64.png"
 	},
 	"background": {
-		"scripts": ["background.js"]
+		"scripts": ["data/lib/ONotesDataManager.js", "data/lib/ONotesMenuManager.js", "background.js"]
 	},
 	"permissions": ["storage", "menus", "activeTab"],
 	"browser_action": {
@@ -30,5 +30,16 @@
 		"default_title": "ONotes",
 		"default_panel": "data/sidebar.html",
 		"open_at_install": false
+	},
+	"content_scripts": [
+		{
+			"matches": ["<all_urls>"],
+			"js": ["data/contentScripts/csONotesMenu.js"]
+		}
+	],
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "onotes@example.com"
+		}
 	}
 }

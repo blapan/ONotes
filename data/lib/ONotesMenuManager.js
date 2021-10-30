@@ -1,51 +1,49 @@
-var cm = require('sdk/context-menu');
-
 /**
  * @param {ONotesDataManager} odm
- * @param {Worker} sbWorker Sidebar worker set by the sidebar's onReady event handler
  */
 function ONotesMenuManager(odm) {
   this.odm = odm;
-  this.sbWorker = null;
   var omm = this;
   
-  this.menu = cm.Menu({
-    label: "Insert ONote",
-    context: [
-      cm.SelectorContext('input[type="text"], textarea'),
-      cm.PredicateContext(function() { return omm.menu.items.length > 0 }),
-    ],
-    contentScriptFile: './contentScripts/csONotesMenu.js',
-  });  
-  this.items = { item: null, menu: this.menu, children: [] };
-  this.trash = { item: null, menu: null, children: [] };
-  
-  this.createItem = cm.Item({
-    label: "Create ONote",
-    context: cm.SelectionContext(),
-    contentScriptFile: './contentScripts/csONotesCreate.js',
-    onMessage: function(text) {
-      var { label, menuLabel } = odm.createLabel(text);
-      var ONote = {
-        label: label,
-        menuLabel: menuLabel,
-        value: text,
-      };
-      omm.add(ONote, omm.menu, omm.items.children);
-      odm.add(ONote);
-      if(omm.sbWorker != null) omm.sbWorker.port.emit("onotes-addon-new", ONote);
-    },
+  browser.menus.create({
+    id: "create-onote",
+    title: "Create ONote",
+    contexts: ["selection"]
   });
   
-  for(var i = 0; i < odm.data.length; ++i) {
-    this.add(odm.data[i], this.menu, this.items.children);
-  }
-  for(var i = 0; i < odm.trash.length; ++i) {
-    this.add(odm.trash[i], null, this.trash.children);
-  }
+  this.rootMenuId = browser.menus.create({
+    id: "insert-onote",
+    title: "Insert ONote",
+    visible: false,
+    contexts: ["editable"]
+  });
+
+  browser.menus.onClicked.addListener(this.handler);
+  
+  this.build();
 }
 
 ONotesMenuManager.prototype = {
+  handler: async function(info, tab) {
+    var [menuId, index] = info.menuItemId.split('_')
+    if(menuId == 'create-onote') {
+      var sel = info.selectionText;
+      //handler functions do not have access to this object and run in the global scope
+      var obj = odm.create(sel);
+      odm.add(obj);
+      omm.add(obj, omm.rootMenuId, omm.items.children, omm.items.children.length.toString());
+      var sidebar_open = await browser.sidebarAction.isOpen({});
+      if(sidebar_open) {
+        await browser.runtime.sendMessage({action: 'create-onote', data: obj});
+      }
+    }
+    else if(menuId == 'onote') {
+      var msg = { action: 'insert-onote', targetElementId: info.targetElementId, data: odm.get(index).value};
+      console.log('Insert onote: ', menuId, index);
+      browser.tabs.sendMessage(tab.id, msg);
+    }
+  },
+  
   get: function(index) {
     var temp = this.items;
     var indexArr = [];
@@ -61,38 +59,52 @@ ONotesMenuManager.prototype = {
     return temp;
   },
   
-  rebuild: function(index) {
-    var itemObj = this.get(index);
-    if(itemObj.menu == null) return;
-    for(var i = 0; i < itemObj.children.length; ++i) {
-      if(itemObj.children[i] == null) continue;
-      var item = (itemObj.children[i].menu == null) ? itemObj.children[i].item : itemObj.children[i].menu;
-      itemObj.menu.addItem(item);
+  clear: async function(itemsArr) {
+    if(typeof itemsArr == 'undefined') itemsArr = this.items.children;
+    for(var i = 0; i < itemsArr.length; ++i) {
+      if(itemsArr[i].menuId !== null) {
+        this.clear(itemsArr[i].children);
+        await browser.menus.remove(itemsArr[i].menuId);
+      }
+      else await browser.menus.remove(itemsArr[i].itemId);
     }
+    itemsArr = [];
   },
   
-  add: function(ONote, parentMenu, parentArr) {
+  build: function() {
+    this.items = { itemId: null, menuId: this.rootMenuId, children: [] };
+    for(var i = 0; i < odm.data.length; ++i) {
+      this.add(odm.data[i], this.rootMenuId, this.items.children, i.toString());
+    }
+    if(this.items.children.length > 0) browser.menus.update(this.rootMenuId, {visible: true});
+  },
+  
+  rebuild: async function() {
+    await this.clear();
+    this.build();
+  },
+  
+  add: function(ONote, parentMenuId, parentArr, idx) {
     if(ONote == null) {
       parentArr.push(null);
       return;
     }
-    var itemObj = { item: null, menu: null, children: [] };
+    var itemObj = { itemId: null, menuId: null, children: [] };
     if(typeof ONote.menuLabel == 'undefined') {
       //The ( .. ) around the assignment statement is required syntax when using object literal destructuring assignment without a declaration.
       ({ label: ONote.label, menuLabel: ONote.menuLabel } = this.odm.createLabel((typeof ONote.value == 'object') ? ONote.label : ONote.value));
     }
     
     if(typeof ONote.value == 'object') {
-      var item = itemObj.menu = cm.Menu({ label: ONote.menuLabel, contentScriptFile: './contentScripts/csONotesMenu.js' });
+      var itemId = itemObj.menuId = browser.menus.create({ id: 'onote-folder_'+idx, title: ONote.menuLabel, parentId: parentMenuId, visible: (ONote.value.length > 0) });
       for(var i = 0; i < ONote.value.length; ++i) {
-        this.add(ONote.value[i], itemObj.menu, itemObj.children);
+        this.add(ONote.value[i], itemObj.menuId, itemObj.children, idx + '.' + i.toString());
       }
     }
     else {
-      var item = itemObj.item = cm.Item({ label: ONote.menuLabel, data: ONote.value });
+      var itemId = itemObj.itemId = browser.menus.create({ id: 'onote_'+idx, title: ONote.menuLabel, parentId: parentMenuId });
     }
     parentArr.push(itemObj);
-    if(parentMenu != null) parentMenu.addItem(item);
   },
   
   move: function(payload) {
@@ -119,5 +131,3 @@ ONotesMenuManager.prototype = {
     this.rebuild(dPath);    
   },
 }
-
-if(typeof exports != 'undefined') exports.ONotesMenuManager = ONotesMenuManager;
